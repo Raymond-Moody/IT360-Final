@@ -1,0 +1,128 @@
+
+Ball hit the side of a block
+ball.pos = 10.0,20.000000000000025
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,20
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,20.000000000000025
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,20
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,20.500000000000032
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,20.4125
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,20.500000000000032
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,20.4125
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,20.900000000000038
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,20.825
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,20.900000000000038
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,20.825
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,21.300000000000043
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,21.2375
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,21.300000000000043
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,21.2375
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,21.70000000000005
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,21.65
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,21.70000000000005
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,21.65
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.100000000000055
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,22.0625
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.100000000000055
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,22.0625
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.50000000000006
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,22.475
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.50000000000006
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,22.475
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.900000000000066
+ball.velocity = -0.0,0.1
+ball.speed = 0.1
+ball.bounced = False
+self.pos = 8.7,22.8875
+                        
+
+Ball hit the side of a block
+ball.pos = 10.0,22.900000000000066
+ball.velocity = 0.0,0.1
+ball.speed = 0.1
+ball.bounced = True
+self.pos = 10.15,22.8875
+                        
