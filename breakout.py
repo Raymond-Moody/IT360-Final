@@ -299,6 +299,15 @@ def key_callback(window, key, scancode, action, mods):
         elif key == glfw.KEY_R:
             game.__init__()
 
+def cursor_pos_callback(window, xpos, ypos):
+    new_pos = translate_to_world_coords(xpos, 0)
+    new_x = new_pos[0]
+    game.paddle.setX(new_x - Paddle.WIDTH / 2)
+
+def mouse_button_callback(window, button, action, mods):
+    if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
+        game.serve_ball()
+
 #Initialize
 game = Game()
 
@@ -312,6 +321,8 @@ if not window:
 glfw.make_context_current(window)
 
 glfw.set_key_callback(window, key_callback)
+glfw.set_cursor_pos_callback(window, cursor_pos_callback)
+glfw.set_mouse_button_callback(window, mouse_button_callback)
 
 gluOrtho2D(screen_leftx,
             screen_rightx,
