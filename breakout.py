@@ -15,6 +15,11 @@ screen_topy = 26
 screen_bottomy = 0
 
 #Class / Function Definitions 
+def translate_to_world_coords(screenx, screeny):
+    x = (screenx / screen_dimx) * screen_rightx
+    y = (screeny - screen_dimy / 2) / screen_dimy * screen_topy
+    return (x, y)
+
 class Block:
     SCALE = 1.75
     WIDTH = 1.0 * SCALE
@@ -163,6 +168,13 @@ class Paddle(Block):
         if self.x > screen_rightx - self.WIDTH:
             self.x = screen_rightx - self.WIDTH 
 
+    def setX(self, x):
+        if x < screen_leftx:
+            x = screen_leftx
+        elif x > screen_rightx - Paddle.WIDTH:
+            x = screen_rightx - Paddle.WIDTH
+        self.x = x
+
 class Ball:
     radius = 0.40
 
@@ -171,7 +183,7 @@ class Ball:
         self.y = 7
         self.vx = 0
         self.vy = 0
-        self.speed = 0.1
+        self.speed = 0.2
         self.speed_sources = [4, 8, 12, 'orange', 'red']
         self.paddle_bounces = 0
         self.served = False
