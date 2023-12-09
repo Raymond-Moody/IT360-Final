@@ -4,6 +4,7 @@ import random
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
+from PIL import Image
 
 BALL_SPEED_MULT = 1.2
 #Screen size information
@@ -13,12 +14,63 @@ screen_leftx = 0
 screen_rightx = 20
 screen_topy = 26
 screen_bottomy = 0
+char_width = 1 / 16
+char_height = 1 / 6.5
+
+char_dict = {
+    'S' : (3,4),
+    'C' : (12,0),
+    'O' : (3,0),
+    'R' : (3,3),
+    'E' : (14,0),
+    'L' : (4,0),
+    'I' : (4,3),
+    'V' : (5,0),
+    '0' : (7,5),
+    '1' : (7,0),
+    '2' : (7,1),
+    '3' : (7,2),
+    '4' : (7,3),
+    '5' : (7,4),
+    '6' : (8,0),
+    '7' : (8,1),
+    '8' : (8,2),
+    '9' : (8,2)
+}
+
+image = Image.open("vcr.png")
+#texture_data = image.tobytes("raw", "RGB", 0, -1)
+texture_data = image.tobytes()
+img_width, img_height = image.size
 
 #Class / Function Definitions 
 def translate_to_world_coords(screenx, screeny):
     x = (screenx / screen_dimx) * screen_rightx
     y = (screeny - screen_dimy / 2) / screen_dimy * screen_topy
     return (x, y)
+
+class TextBlock:
+    WIDTH = 1
+    HEIGHT = 1
+
+    def __init__(self, x, y, char):
+        self.x = x
+        self.y = y
+        self.char_x, self.char_y = char_dict[char]
+        self.char_x = self.char_x * char_width
+        self.char_y = self.char_y * char_height
+
+    def setChar(self, char):
+        self.char_x, self.char_y = char_dict[char] 
+
+    def draw(self):
+        glTexCoord2f(0, 0);
+        glBegin(GL_QUADS)
+        glTexCoord2f(self.char_x, self.char_y + char_height); glVertex2f(self.x, self.y)
+        glTexCoord2f(self.char_x + char_width, self.char_y + char_height); glVertex2f(self.x + self.WIDTH, self.y)
+        glTexCoord2f(self.char_x + char_width, self.char_y); glVertex2f(self.x + self.WIDTH, self.y + self.HEIGHT)
+        glTexCoord2f(self.char_x, self.char_y); glVertex2f(self.x, self.y + self.HEIGHT)
+        glEnd()
 
 class Block:
     SCALE = 1.75
@@ -261,10 +313,20 @@ class Game:
 
     def draw_lives(self):
         pass
+        '''
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, texture_id)
+        glDisable(GL_TEXTURE_2D)
+        '''
     #print('Lives:',self.lives)
 
     def draw_score(self):
         pass
+        '''
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, texture_id)
+        glDisable(GL_TEXTURE_2D)
+        '''
     #print('Score:',self.score)
 
     def loop(self):
@@ -341,12 +403,31 @@ gluOrtho2D(screen_leftx,
             screen_bottomy,
             screen_topy)
 
+
+glEnable(GL_TEXTURE_2D)
+texture_id = glGenTextures(1)
+glBindTexture(GL_TEXTURE_2D, texture_id)
+
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data)
+
+test_blocks = []
+tx = 0
+for char in char_dict:
+    test_blocks.append(TextBlock(tx,1, char))
+    tx += 1
 #Main Loop
 while not glfw.window_should_close(window):
     glClearColor(0.0,0.0,0.0,1.0)
     glClear(GL_COLOR_BUFFER_BIT)
 
     game.loop()
+    for block in test_blocks:
+        block.draw()
 
     glfw.swap_buffers(window)
     glfw.poll_events()
