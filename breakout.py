@@ -15,7 +15,7 @@ screen_rightx = 20
 screen_topy = 26
 screen_bottomy = 0
 char_width = 1 / 16
-char_height = 1 / 6.5
+char_height = 1 / 6.4
 
 char_dict = {
     'S' : (3,4),
@@ -35,11 +35,23 @@ char_dict = {
     '6' : (8,0),
     '7' : (8,1),
     '8' : (8,2),
-    '9' : (8,2)
+    '9' : (8,3),
+    ':' : (2,0),
+    'G' : (6,5),
+    'A' : (10,0),
+    'M' :  (0,3),
+    'P' :  (2,2),
+    'r' :  (13,1),
+    'e' :  (9,2.8),
+    's' :  (12,1),
+    'T' :  (4,5),
+    't' :  (8,4),
+    'a' :  (10,1),
+    'o' :  (9,1),
 }
 
 image = Image.open("vcr.png")
-#texture_data = image.tobytes("raw", "RGB", 0, -1)
+#texture_data = image.tobytes("raw", "RGBA", 0, -1)
 texture_data = image.tobytes()
 img_width, img_height = image.size
 
@@ -51,7 +63,7 @@ def translate_to_world_coords(screenx, screeny):
 
 class TextBlock:
     WIDTH = 1
-    HEIGHT = 1
+    HEIGHT = 1.25
 
     def __init__(self, x, y, char):
         self.x = x
@@ -62,15 +74,19 @@ class TextBlock:
 
     def setChar(self, char):
         self.char_x, self.char_y = char_dict[char] 
+        self.char_x = self.char_x * char_width
+        self.char_y = self.char_y * char_height
 
     def draw(self):
-        glTexCoord2f(0, 0);
+        glEnable(GL_TEXTURE_2D)
+        glColor3f(1.0, 1.0, 1.0)
         glBegin(GL_QUADS)
         glTexCoord2f(self.char_x, self.char_y + char_height); glVertex2f(self.x, self.y)
         glTexCoord2f(self.char_x + char_width, self.char_y + char_height); glVertex2f(self.x + self.WIDTH, self.y)
         glTexCoord2f(self.char_x + char_width, self.char_y); glVertex2f(self.x + self.WIDTH, self.y + self.HEIGHT)
         glTexCoord2f(self.char_x, self.char_y); glVertex2f(self.x, self.y + self.HEIGHT)
         glEnd()
+        glDisable(GL_TEXTURE_2D)
 
 class Block:
     SCALE = 1.75
@@ -280,12 +296,35 @@ class Game:
     BLOCKS_PER_ROW = 10
 
     def __init__(self):
+        self.over = False
         self.lives = 3
         self.score = 0
         self.screen = 1
         self.paddle = Paddle()
         self.balls = [Ball() for i in range(self.screen)]
         self.blocks = [self.paddle] 
+        self.score_label = [
+            TextBlock(0,25,'S'),
+            TextBlock(1,25,'C'),
+            TextBlock(2,25,'O'),
+            TextBlock(3,25,'R'),
+            TextBlock(4,25,'E'),
+            TextBlock(5,25,':'),
+            TextBlock(6,25,'0'),
+            TextBlock(7,25,'0'),
+            TextBlock(8,25,'0'),
+            TextBlock(8,25,'0'),
+        ]
+        self.lives_label = [
+            TextBlock(10,25,'L'),
+            TextBlock(11,25,'I'),
+            TextBlock(12,25,'V'),
+            TextBlock(13,25,'E'),
+            TextBlock(14,25,'S'),
+            TextBlock(15,25,':'),
+            TextBlock(16,25,'0'),
+            TextBlock(17,25,'0'),
+        ]
         self.init_blocks()
 
     def init_blocks(self):
@@ -306,27 +345,27 @@ class Game:
         self.balls.append(Ball())
 
         if self.lives <= 0:
-            self.game_over()
-
-    def game_over(self):
-        print('You lost!')
+            self.over = True
 
     def draw_lives(self):
-        pass
-        '''
-        glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, texture_id)
-        glDisable(GL_TEXTURE_2D)
-        '''
+        self.lives_label[7].setChar(str(self.lives % 10))
+        self.lives_label[6].setChar(str(self.lives // 10))
+
+        for quad in self.lives_label:
+            quad.draw()
     #print('Lives:',self.lives)
 
     def draw_score(self):
-        pass
-        '''
-        glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, texture_id)
-        glDisable(GL_TEXTURE_2D)
-        '''
+        temp_score = self.score
+        self.score_label[9].setChar(str(temp_score % 10))
+        temp_score = temp_score // 10
+        self.score_label[8].setChar(str(temp_score % 10))
+        temp_score = temp_score // 10
+        self.score_label[7].setChar(str(temp_score % 10))
+        temp_score = temp_score // 10
+        self.score_label[6].setChar(str(temp_score % 10))
+        for quad in self.score_label:
+            quad.draw()
     #print('Score:',self.score)
 
     def loop(self):
@@ -384,6 +423,32 @@ def mouse_button_callback(window, button, action, mods):
 
 #Initialize
 game = Game()
+game_over_label = [
+            TextBlock(5,11,'G'),
+            TextBlock(6,11,'A'),
+            TextBlock(7,11,'M'),
+            TextBlock(8,11,'E'),
+            TextBlock(10,11,'O'),
+            TextBlock(11,11,'V'),
+            TextBlock(12,11,'E'),
+            TextBlock(13,11,'R'),
+
+            TextBlock(1,10.1,'P'),
+            TextBlock(2,10,'r'),
+            TextBlock(3,10,'e'),
+            TextBlock(4,10,'s'),
+            TextBlock(5,10,'s'),
+            TextBlock(7,10,'R'),
+            TextBlock(9,10,'T'),
+            TextBlock(10,10,'o'),
+            TextBlock(12,10,'R'),
+            TextBlock(13,10,'e'),
+            TextBlock(14,10,'s'),
+            TextBlock(15,10,'t'),
+            TextBlock(16,10,'a'),
+            TextBlock(17,10,'r'),
+            TextBlock(18,10,'t'),
+] 
 
 if not glfw.init():
     exit()
@@ -408,26 +473,21 @@ glEnable(GL_TEXTURE_2D)
 texture_id = glGenTextures(1)
 glBindTexture(GL_TEXTURE_2D, texture_id)
 
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data)
+glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data)
 
-test_blocks = []
-tx = 0
-for char in char_dict:
-    test_blocks.append(TextBlock(tx,1, char))
-    tx += 1
 #Main Loop
 while not glfw.window_should_close(window):
     glClearColor(0.0,0.0,0.0,1.0)
     glClear(GL_COLOR_BUFFER_BIT)
 
-    game.loop()
-    for block in test_blocks:
-        block.draw()
+    if not game.over:
+        game.loop()
+    else:
+        for char in game_over_label:
+            char.draw()
 
     glfw.swap_buffers(window)
     glfw.poll_events()
