@@ -51,7 +51,7 @@ char_dict = {
 }
 
 image = Image.open("vcr.png")
-#texture_data = image.tobytes("raw", "RGBA", 0, -1)
+#texture_data = image.tobytes("raw", "I", 0, -1)
 texture_data = image.tobytes()
 img_width, img_height = image.size
 
@@ -185,9 +185,9 @@ class RedBlock(Block):
             return False
 
 class Paddle(Block):
-    SCALE = 1.25
-    WIDTH = 1.5 * SCALE
-    HEIGHT = 0.15 * SCALE
+    WIDTH = 2.5
+    #WIDTH = 1.875
+    HEIGHT = 0.1875
 
     def __init__(self):
         super().__init__((screen_rightx - Paddle.WIDTH) / 2, 2, (1.0,1.0,1.0), 0)
@@ -278,15 +278,6 @@ class Ball:
         glEnd()
         glPopMatrix()
 
-    def wallCollision(self):
-        #Correct for screen borders
-        if self.y > screen_topy - self.radius:
-            print('cieling collision')
-            self.vy = -1 * self.vy
-        if self.x < self.radius or self.x > screen_rightx - self.radius:
-            print('wall collision')
-            self.vx = -1 * self.vx
-
     def update(self):
         #print(self.vx, self.vy)
         self.x = self.x + self.vx
@@ -353,15 +344,11 @@ class Game:
 
         for quad in self.lives_label:
             quad.draw()
-    #print('Lives:',self.lives)
 
     def draw_score(self):
         temp_score = self.score
-        print("score = ", temp_score)
         self.score_label[9].setChar(str(temp_score % 10))
         temp_score = temp_score // 10
-        print("score // 10 = ", temp_score)
-        print("temp_score % 10 = ", temp_score % 10)
         self.score_label[8].setChar(str(temp_score % 10))
         temp_score = temp_score // 10
         self.score_label[7].setChar(str(temp_score % 10))
@@ -374,9 +361,11 @@ class Game:
     def loop(self):
         if all(not b.active for b in self.blocks if not isinstance(b, Paddle)):
             self.screen = self.screen + 1
-            self.balls = [Ball() for i in range(self.screen)]
+            self.balls.append(Ball())
             self.init_blocks()
 
+        self.draw_lives()
+        self.draw_score()
 
         for ball in self.balls:
             ball.bounced = False
@@ -386,14 +375,17 @@ class Game:
                 if block.active:
                     block.draw()
 
-            ball.wallCollision()
-            ball.update()
             if ball.y + ball.radius < self.paddle.y:
                 self.lose_life(ball)
-            ball.draw()
+            elif ball.y > screen_topy - ball.radius:
+                self.paddle.WIDTH = 1.875
+                ball.vy = -1 * ball.vy
 
-        self.draw_lives()
-        self.draw_score()
+            if ball.x + ball.radius > screen_rightx or ball.x - ball.radius < screen_leftx:
+                ball.vx = -1  * ball.vx
+
+            ball.update()
+            ball.draw()
 
     def move_paddle(self, direction):
         self.paddle.move(direction)
@@ -414,6 +406,8 @@ def key_callback(window, key, scancode, action, mods):
             game.serve_ball()
         elif key == glfw.KEY_R:
             game.__init__()
+        elif key == glfw.KEY_X:
+            game.over = True
 
 def cursor_pos_callback(window, xpos, ypos):
     new_pos = translate_to_world_coords(xpos, 0)
@@ -436,21 +430,21 @@ game_over_label = [
             TextBlock(12,11,'E'),
             TextBlock(13,11,'R'),
 
-            TextBlock(1,10.1,'P'),
-            TextBlock(2,10,'r'),
-            TextBlock(3,10,'e'),
-            TextBlock(4,10,'s'),
-            TextBlock(5,10,'s'),
-            TextBlock(7,10,'R'),
-            TextBlock(9,10,'T'),
-            TextBlock(10,10,'o'),
-            TextBlock(12,10,'R'),
-            TextBlock(13,10,'e'),
-            TextBlock(14,10,'s'),
-            TextBlock(15,10,'t'),
-            TextBlock(16,10,'a'),
-            TextBlock(17,10,'r'),
-            TextBlock(18,10,'t'),
+            TextBlock(1,9.7,'P'),
+            TextBlock(2,9.5,'r'),
+            TextBlock(3,9.5,'e'),
+            TextBlock(4,9.5,'s'),
+            TextBlock(5,9.5,'s'),
+            TextBlock(7,9.6,'R'),
+            TextBlock(9,9.6,'T'),
+            TextBlock(10,9.5,'o'),
+            TextBlock(12,9.6,'R'),
+            TextBlock(13,9.5,'e'),
+            TextBlock(14,9.5,'s'),
+            TextBlock(15,9.6,'t'),
+            TextBlock(16,9.5,'a'),
+            TextBlock(17,9.5,'r'),
+            TextBlock(18,9.6,'t'),
 ] 
 
 if not glfw.init():
@@ -476,8 +470,8 @@ glEnable(GL_TEXTURE_2D)
 texture_id = glGenTextures(1)
 glBindTexture(GL_TEXTURE_2D, texture_id)
 
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
 glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data)
 
