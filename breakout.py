@@ -313,17 +313,17 @@ class Game:
             TextBlock(6,25,'0'),
             TextBlock(7,25,'0'),
             TextBlock(8,25,'0'),
-            TextBlock(8,25,'0'),
+            TextBlock(9,25,'0'),
         ]
         self.lives_label = [
-            TextBlock(10,25,'L'),
-            TextBlock(11,25,'I'),
-            TextBlock(12,25,'V'),
-            TextBlock(13,25,'E'),
-            TextBlock(14,25,'S'),
-            TextBlock(15,25,':'),
-            TextBlock(16,25,'0'),
+            TextBlock(11,25,'L'),
+            TextBlock(12,25,'I'),
+            TextBlock(13,25,'V'),
+            TextBlock(14,25,'E'),
+            TextBlock(15,25,'S'),
+            TextBlock(16,25,':'),
             TextBlock(17,25,'0'),
+            TextBlock(18,25,'0'),
         ]
         self.init_blocks()
 
@@ -357,8 +357,11 @@ class Game:
 
     def draw_score(self):
         temp_score = self.score
+        print("score = ", temp_score)
         self.score_label[9].setChar(str(temp_score % 10))
         temp_score = temp_score // 10
+        print("score // 10 = ", temp_score)
+        print("temp_score % 10 = ", temp_score % 10)
         self.score_label[8].setChar(str(temp_score % 10))
         temp_score = temp_score // 10
         self.score_label[7].setChar(str(temp_score % 10))
