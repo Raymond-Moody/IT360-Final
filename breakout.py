@@ -17,6 +17,8 @@ screen_bottomy = 0
 char_width = 1 / 16
 char_height = 1 / 6.4
 
+cheating = False
+
 char_dict = {
     'S' : (3,4),
     'C' : (12,0),
@@ -56,9 +58,14 @@ texture_data = image.tobytes()
 img_width, img_height = image.size
 
 #Class / Function Definitions 
+def distance(x1, y1, x2, y2):
+    dx = x2-x1
+    dy = y2-y1
+    return sqrt(dx*dx + dy+dy)
+
 def translate_to_world_coords(screenx, screeny):
     x = (screenx / screen_dimx) * screen_rightx
-    y = (screeny - screen_dimy / 2) / screen_dimy * screen_topy
+    y = screen_topy - (screeny / screen_dimy) * screen_topy
     return (x, y)
 
 class TextBlock:
@@ -110,43 +117,38 @@ class Block:
         glEnd()
 
     def resolveCollision(self, ball):
-        # TODO: Bouncing off the top / bottom should not change x direction
-        #       Bouncing off the side should not change y direction
         if self.active:
             # Check if ball is hitting the side of a block
-            if ((ball.x + ball.radius >= self.x and ball.x < self.x) or \
-                    (ball.x - ball.radius <= self.x + self.WIDTH and ball.x > self.x + self.WIDTH)) and \
-                    (ball.y > self.y and ball.y < self.y + self.HEIGHT):
+            left = self.x
+            right = self.x + self.WIDTH
+            bottom = self.y
+            top = self.y + self.HEIGHT
+            center_x = self.x + self.WIDTH / 2
+            center_y = self.y + self.HEIGHT / 2
+            ball_left = ball.x - ball.radius
+            ball_right = ball.x + ball.radius
+            ball_bottom = ball.y - ball.radius
+            ball_top = ball.y + ball.radius
+            
+            #Ball is colliding
+            if abs(ball.x - center_x) < ball.radius + self.WIDTH / 2 and \
+                    abs(ball.y - center_y) < ball.radius + self.HEIGHT / 2:
+
+                #Check if ball is hitting the top or bottom of the block
+                if (ball_top >= bottom and ball_top - ball.vy < bottom) or (ball_bottom <= top and ball_bottom - ball.vy > top):
+                    if not ball.bounced:
+                        ball.vy = -1 * ball.vy
+                        ball.bounced = True
+
+                #ball must have hit the side
+                else:
+                    if not ball.bounced:
+                        ball.vx = -1 * ball.vx
+                        ball.bounced = True
+
                 self.active = False
-                print(f"""
-Ball hit the side of a block
-ball.pos = {ball.x},{ball.y}
-ball.velocity = {ball.vx},{ball.vy}
-ball.speed = {ball.speed}
-ball.bounced = {ball.bounced}
-self.pos = {self.x},{self.y}
-                        """)
-                if not ball.bounced: # ball can hit 2 blocks in one frame, but should not bounce off both
-                    ball.vx = -1 * ball.vx
-                    ball.bounced = True
                 return True
-            #Check if ball is hitting the top or bottom of the block
-            if ((ball.y + ball.radius >= self.y and ball.y <= self.y) or \
-                    (ball.y - ball.radius <= self.y + self.HEIGHT and ball.y >= self.y + self.HEIGHT)) and \
-                    (ball.x > self.x and ball.x < self.x + self.WIDTH):
-                self.active = False
-                print(f"""
-Ball hit the bottom or top of a block
-ball.pos = {ball.x},{ball.y}
-ball.velocity = {ball.vx},{ball.vy}
-ball.speed = {ball.speed}
-ball.bounced = {ball.bounced}
-self.pos = {self.x},{self.y}
-""")
-                if not ball.bounced: # ball can hit 2 blocks in one frame, but should not bounce off both
-                    ball.vy = -1 * ball.vy
-                    ball.bounced = True
-                return True
+                
         return False
 
 class YellowBlock(Block):
@@ -287,6 +289,7 @@ class Game:
     BLOCKS_PER_ROW = 10
 
     def __init__(self):
+        self.paused = False
         self.over = False
         self.lives = 3
         self.score = 0
@@ -316,6 +319,7 @@ class Game:
             TextBlock(17,25,'0'),
             TextBlock(18,25,'0'),
         ]
+        self.screen_quad = TextBlock(0,0,'1')
         self.init_blocks()
 
     def init_blocks(self):
@@ -331,7 +335,7 @@ class Game:
             self.blocks.append(RedBlock(bx, 20 + 7 * (Block.HEIGHT + 0.1)))
 
     def lose_life(self, ball):
-        self.lives = self.lives - 1
+        self.lives = max(self.lives - 1, 0)
         self.balls.remove(ball)
         self.balls.append(Ball())
 
@@ -356,24 +360,27 @@ class Game:
         self.score_label[6].setChar(str(temp_score % 10))
         for quad in self.score_label:
             quad.draw()
-    #print('Score:',self.score)
+
+    def draw_screen_num(self):
+        # Assume nobody is getting past screen 9
+        self.screen_quad.setChar(str(self.screen % 10))
+        self.screen_quad.draw()
 
     def loop(self):
         if all(not b.active for b in self.blocks if not isinstance(b, Paddle)):
             self.screen = self.screen + 1
-            self.balls.append(Ball())
+            #self.balls.append(Ball())
+            self.balls = [Ball() for _ in range(self.screen)]
             self.init_blocks()
 
-        self.draw_lives()
-        self.draw_score()
 
         for ball in self.balls:
             ball.bounced = False
             for block in self.blocks:
                 if block.resolveCollision(ball):
+                    if (self.score + block.value) // 1000 > self.score // 1000:
+                        self.lives = self.lives + 1
                     self.score = self.score + block.value
-                if block.active:
-                    block.draw()
 
             if ball.y + ball.radius < self.paddle.y:
                 self.lose_life(ball)
@@ -385,6 +392,17 @@ class Game:
                 ball.vx = -1  * ball.vx
 
             ball.update()
+
+    def render(self):
+        self.draw_lives()
+        self.draw_score()
+        self.draw_screen_num()
+
+        for block in self.blocks:
+            if block.active:
+                block.draw()
+
+        for ball in self.balls:
             ball.draw()
 
     def move_paddle(self, direction):
@@ -408,11 +426,21 @@ def key_callback(window, key, scancode, action, mods):
             game.__init__()
         elif key == glfw.KEY_X:
             game.over = True
+        elif key == glfw.KEY_P:
+            game.paused = not game.paused
+        elif key == glfw.KEY_O and game.paused:
+            game.loop()
+        elif key == glfw.KEY_C:
+            global cheating
+            cheating = not cheating
+
 
 def cursor_pos_callback(window, xpos, ypos):
-    new_pos = translate_to_world_coords(xpos, 0)
-    new_x = new_pos[0]
+    new_x, new_y = translate_to_world_coords(xpos, ypos)
     game.paddle.setX(new_x - Paddle.WIDTH / 2)
+    if cheating:
+        game.balls[0].x = new_x
+        game.balls[0].y = new_y
 
 def mouse_button_callback(window, button, action, mods):
     if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
@@ -480,12 +508,14 @@ while not glfw.window_should_close(window):
     glClearColor(0.0,0.0,0.0,1.0)
     glClear(GL_COLOR_BUFFER_BIT)
 
-    if not game.over:
-        game.loop()
-    else:
-        for char in game_over_label:
-            char.draw()
+    if not game.paused:
+        if not game.over:
+            game.loop()
+        else:
+            for char in game_over_label:
+                char.draw()
 
+    game.render()
     glfw.swap_buffers(window)
     glfw.poll_events()
 
